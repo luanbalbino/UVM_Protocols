@@ -1,0 +1,137 @@
+// -----------------------------------------------------------------------------
+// SPI Master RTL with MISO reception support
+// Mode: CPOL = 0, CPHA = 0 | MSB First
+// -----------------------------------------------------------------------------
+module spi_master_simple (
+    input  logic        clk,
+    input  logic        rst_n,
+    input  logic        start,
+    input  logic [7:0]  data_in,
+    input  logic        miso,
+    output logic        mosi,
+    output logic        sclk,
+    output logic        done,
+    output logic [7:0]  data_out  
+);
+
+    // Parameters for SPI clock divider
+    // Example: if clk = 100MHz and spi_clk_div = 2, sclk_freq = 50MHz
+    // If clk = 100MHz and spi_clk_div = 5, sclk_freq = 20MHz
+    localparam SPI_CLK_DIV = 2; // Adjust this value to control SCLK frequency
+
+    typedef enum logic [1:0] {IDLE, TRANSFER} state_t;
+    state_t state; // We will use 'state' directly for FSM logic
+
+    logic [7:0] shift_reg_tx;   // Transmission shift register
+    logic [7:0] shift_reg_rx;   // Reception shift register
+    logic [2:0] bit_cnt;
+    logic sclk_reg;
+    logic mosi_reg; // mosi must be a register to be assigned in always_ff
+    logic done_reg; // done must be a register to be assigned in always_ff
+    logic [7:0] data_out_reg; // data_out must be a register
+
+    // Clock divider logic for sclk generation
+    logic [($clog2(SPI_CLK_DIV)):0] clk_div_cnt;
+    logic spi_clk_enable; // Signal that indicates when sclk should toggle
+
+    // Outputs
+    assign sclk = sclk_reg;
+    assign mosi = mosi_reg;
+    assign done = done_reg; // The 'done' output is the 'done_reg' register
+    assign data_out = data_out_reg;
+
+    // Clock Divider Logic
+    // This block is separate and controls the divider counter and the SPI clock enable
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            clk_div_cnt <= '0;
+            spi_clk_enable <= 1'b0;
+        end else begin
+            if (state == TRANSFER) begin // Only enable SPI clock during transfer
+                if (clk_div_cnt == (SPI_CLK_DIV - 1)) begin
+                    clk_div_cnt <= '0;
+                    spi_clk_enable <= 1'b1; // Enable SCLK toggling
+                end else begin
+                    clk_div_cnt <= clk_div_cnt + 1;
+                    spi_clk_enable <= 1'b0;
+                end
+            end else begin // In IDLE, reset the divider counter
+                clk_div_cnt <= '0;
+                spi_clk_enable <= 1'b0;
+            end
+        end
+    end
+
+    // FSM and Main Synchronous Logic
+    // All assignments to registers (state, shift_reg_tx, shift_reg_rx, bit_cnt,
+    // sclk_reg, mosi_reg, done_reg, data_out_reg) must be in this block.
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            // Asynchronous reset: initialize all registers
+            state        <= IDLE;
+            shift_reg_tx <= 8'h00;
+            shift_reg_rx <= 8'h00;
+            bit_cnt      <= 3'd0;
+            sclk_reg     <= 1'b0;
+            mosi_reg     <= 1'b0;
+            done_reg     <= 1'b0; // Reset done output
+            data_out_reg <= 8'h00;
+        end else begin
+            // Default assignments to avoid latches or 'x's
+            // These values will be overwritten if a specific condition is met
+            sclk_reg     <= sclk_reg;   // Maintain current value
+            mosi_reg     <= mosi_reg;   // Maintain current value
+            data_out_reg <= data_out_reg; // Maintain current value
+
+            // State Machine Logic
+            case (state)
+                IDLE: begin
+                    // When in IDLE, if 'start' is asserted, transition to TRANSFER
+                    if (start) begin
+                        state        <= TRANSFER;
+                        shift_reg_tx <= data_in; // Load data to be transmitted
+                        shift_reg_rx <= 8'h00;   // Reset reception register
+                        bit_cnt      <= 3'd0;    // Reset bit counter
+                        sclk_reg     <= 1'b0;    // Ensure SCLK is low at the start of transfer (CPOL=0)
+                        mosi_reg     <= 1'b0;    // Ensure MOSI is low at the start (or the first bit will be set)
+                        done_reg     <= 1'b0;    // Ensure done is low when starting a new transaction
+                    end
+                    // If no 'start' and in IDLE, ensure done_reg is 0
+                    else begin
+                        done_reg <= 1'b0;
+                    end
+                end
+
+                TRANSFER: begin
+                    // Logic for CPOL=0, CPHA=0
+                    // SCLK starts low
+                    // Data is valid on SCLK rising edge and changes on falling edge
+
+                    if (spi_clk_enable) begin // Every SCLK cycle (determined by the divider)
+                        sclk_reg <= ~sclk_reg; // Toggle SCLK
+
+                        if (sclk_reg == 1'b1) begin // SCLK rising edge (sample MISO, shift TX)
+                            // Capture bit from miso line
+                            shift_reg_rx <= {shift_reg_rx[6:0], miso};
+
+                            // If it's the last bit (bit_cnt == 7, i.e., 8th bit from 0 to 7)
+                            if (bit_cnt == 3'd7) begin
+                                data_out_reg <= {shift_reg_rx[6:0], miso}; // Capture the last received bit
+                                done_reg <= 1'b1; // Assert 'done'
+                                state <= IDLE; // Transition back to IDLE
+                            end
+                            bit_cnt <= bit_cnt + 1; // Increment bit counter
+
+                        end else begin // SCLK falling edge (change MOSI, shift TX)
+                            // Send MSB on mosi
+                            mosi_reg <= shift_reg_tx[7];
+                            // Shift transmission data for the next bit
+                            shift_reg_tx <= {shift_reg_tx[6:0], 1'b0};
+                        end
+                    end
+                end
+            endcase
+        end
+    end
+
+endmodule
