@@ -19,7 +19,7 @@ class spi_monitor extends uvm_monitor;
             // Wait for the 'start' signal from the master to begin monitoring a new transaction
             `uvm_info(get_type_name(), $sformatf("@%0t: Waiting for START...", $time), UVM_MEDIUM)
             @(posedge vif.start);
-            `uvm_info(get_type_name(), $sformatf("@%0t: Start detected, initiating transaction monitoring.", $time), UVM_LOW)
+            `uvm_info(get_type_name(), $sformatf("@%0t: Start detected, initiating transaction monitoring.", $time), UVM_MEDIUM)
 
             tr = spi_transaction::type_id::create("tr", this);
             tr.data = vif.data_in; // Capture the data that the driver sent to the master
@@ -27,7 +27,7 @@ class spi_monitor extends uvm_monitor;
             // Wait for the 'done' signal from the master to indicate the end of the transmission
             `uvm_info(get_type_name(), $sformatf("@%0t: Before @(posedge vif.done), vif.done=%0b", $time, vif.done), UVM_MEDIUM)
             @(posedge vif.done);
-            `uvm_info(get_type_name(), $sformatf("@%0t: Done detected, transaction completed.", $time), UVM_LOW)
+            `uvm_info(get_type_name(), $sformatf("@%0t: Done detected, transaction completed.", $time), UVM_MEDIUM)
 
             ap.write(tr); // Publish the complete transaction
             `uvm_info(get_type_name(), $sformatf("@%0t: Monitored transaction: Sent=0x%0h.", $time, tr.data), UVM_HIGH)

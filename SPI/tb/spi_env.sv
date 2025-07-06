@@ -7,6 +7,7 @@ class spi_env extends uvm_env;
     spi_driver drv;
     spi_monitor mon;
     spi_sequencer seq;
+    spi_cov cov;
 
     // Variable for the virtual interface
     virtual spi_if vif;
@@ -26,6 +27,7 @@ class spi_env extends uvm_env;
         seq = spi_sequencer::type_id::create("seq", this);
         drv = spi_driver::type_id::create("drv", this);
         mon = spi_monitor::type_id::create("mon", this);
+        cov = spi_cov::type_id::create("cov", this);
         
         // Connect driver to sequencer
         drv.seq_item_port.connect(seq.seq_item_export);
@@ -36,8 +38,10 @@ class spi_env extends uvm_env;
         // Connect the virtual interface to the components
         drv.vif = vif;
         mon.vif = vif; 
+        cov.vif = vif;
     
         drv.seq_item_port.connect(seq.seq_item_export);
+        mon.ap.connect(cov.analysis_export);
     endfunction
 
 endclass

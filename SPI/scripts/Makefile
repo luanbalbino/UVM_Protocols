@@ -10,11 +10,29 @@ SRC = ../rtl/spi_master_simple.sv \
       ../tb/spi_monitor.sv \
       ../tb/spi_sequence.sv \
       ../tb/spi_sequencer.sv \
+	  ../tb/spi_test_lib.sv \
+	  ../tb/spi_cov.sv \
       ../tb/spi_env.sv \
       ../tb/spi_test.sv
 
+ifeq ($(assert),1)
+	SRC += ../tb/spi_assertions.sv
+endif
+
 # Define GUI mode as disabled by default
 gui ?= 0
+assert ?= 0
+SEQ ?= basic_transfer_seq
+
+SEED 	 = random
+COV_FILE = cov.ccf
+COV_OPT += -coverage all -covfile $(COV_FILE) -covoverwrite 
+OPT = +UVM_NO_RELNOTES -uvm -64bit -access +rwc -timescale 1ns/1ps  +UVM_VERBOSITY=UVM_LOW
+
+
+ifeq ($(assert),1)
+    OPT += +define+ENABLE_ASSERTIONS
+endif
 
 # -----------------------------------------------------------------------------
 # Usage: make run (batch mode) or make run gui=1 (GUI mode)
@@ -31,7 +49,7 @@ endif
 # -----------------------------------------------------------------------------
 run_xrun: clean
 	@echo "Starting simulation with Cadence xrun (batch mode)..."
-	xrun -uvm -64bit -access +rwc -timescale 1ns/1ps -incdir tb $(SRC)
+	xrun  $(OPT) $(COV_OPT) $(SRC) -svseed $(SEED) +UVM_TESTNAME=spi_test
 	@echo "Simulation with Cadence xrun (batch mode) completed."
 
 # -----------------------------------------------------------------------------
@@ -39,7 +57,7 @@ run_xrun: clean
 # -----------------------------------------------------------------------------
 run_xrun_gui: clean
 	@echo "Starting simulation with Cadence xrun (GUI mode)..."
-	xrun -uvm -64bit -access +rwc -timescale 1ns/1ps -incdir tb -gui $(SRC)
+	xrun  $(OPT) $(COV_OPT) -gui $(SRC) -svseed $(SEED)
 	@echo "Simulation with Cadence xrun (GUI mode) started."
 
 # -----------------------------------------------------------------------------
@@ -47,7 +65,7 @@ run_xrun_gui: clean
 # -----------------------------------------------------------------------------
 clean:
 	@echo "Cleaning generated files..."
-	-rm -rf *.log *.wlf irun.key xcelium.d *.shm .simvision *.history *.key
+	-rm -rf *.log *.wlf irun.key xcelium.d *.shm .simvision *.history *.key *.diag 
 	@echo "Cleaning completed."
 
 .PHONY: all run run_xrun run_xrun_gui clean

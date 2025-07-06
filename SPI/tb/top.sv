@@ -36,6 +36,22 @@ module top;
     //     .received(slave_data_out)
     // );
 
+    `ifdef ENABLE_ASSERTIONS
+        spi_assertions uu_spi_assertions (
+            .clk(clk),
+            .rst_n(spi_if_inst.rst_n),
+            .start(spi_if_inst.start),
+            .sclk(spi_if_inst.sclk),
+            .mosi(spi_if_inst.mosi),
+            .miso(spi_if_inst.miso),
+            .ss_n('0),
+            .done(done),
+            .data_in(data_in),
+            .data_out(data_out),
+            .expected_data_out(expected_value)
+        );
+    `endif
+
     // Reset generation
     initial begin
         rst_n = 1'b0;
@@ -50,6 +66,6 @@ module top;
 
         uvm_config_db#(virtual spi_if)::set(null, "*", "spi_vif", spi_if_inst);
 
-        run_test("spi_test");
+        run_test();
     end
 endmodule
