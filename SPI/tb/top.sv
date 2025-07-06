@@ -10,9 +10,33 @@ module top;
     logic clk;
     logic rst_n;
     logic miso, mosi, sclk;
-    wire cs_n;
 
-    parameter WORD_LEN = 8;
+    parameter int WORD_LEN = 8;
+    
+/* -------------------------------------------------------------------------
+ * SPI MODES REFERENCE TABLE
+ * -------------------------------------------------------------------------
+ * CPOL: Clock Polarity
+ * 0 = SCLK is low when idle
+ * 1 = SCLK is high when idle
+ *
+ * CPHA: Clock Phase
+ * 0 = Data is sampled on the first clock edge, shifted on the second.
+ * 1 = Data is sampled on the second clock edge, shifted on the first.
+ *
+ * -------------------------------------------------------------------------
+ * | SPI Mode | CPOL | CPHA | Data is shifted out on | Data is sampled on  |
+ * |----------|------|------|------------------------|---------------------|
+ * |    0     |  0   |  0   | falling SCLK           | rising SCLK         |
+ * |    1     |  0   |  1   | rising SCLK            | falling SCLK        |
+ * |    2     |  1   |  0   | rising SCLK            | falling SCLK        |
+ * |    3     |  1   |  1   | falling SCLK           | rising SCLK         |
+ * -------------------------------------------------------------------------
+ * source: https://en.wikipedia.org/wiki/Serial_Peripheral_Interface 
+ */   
+    // only [0,0] and [1,0] working.. I need to debug yet
+    parameter bit CPOL = 0;
+    parameter bit CPHA = 0;
     
     logic [WORD_LEN-1:0] slave_data_out;
 
@@ -22,7 +46,9 @@ module top;
 
     spi_master_simple #(
         .SPI_CLK_DIV('d2),
-        .WORD_LEN(WORD_LEN)
+        .WORD_LEN(WORD_LEN),
+        .CPOL(CPOL),
+        .CPHA(CPHA) 
     ) master (
         .clk(clk),
         .rst_n(spi_if_inst.rst_n),    
@@ -33,17 +59,19 @@ module top;
         .sclk(spi_if_inst.sclk),
         .done(spi_if_inst.done),
         .data_out(spi_if_inst.data_out),
-        .cs_n(cs_n)
+        .cs_n(spi_if_inst.cs_n)
     );
 
     spi_slave_simple #(
-        .WORD_LEN(WORD_LEN)
+        .WORD_LEN(WORD_LEN),
+        .CPOL(CPOL),
+        .CPHA(CPHA) 
     ) slave (
         .clk     (clk),
         .rst_n   (rst_n),
         .sclk    (spi_if_inst.sclk),
         .mosi    (spi_if_inst.mosi),
-        .cs_n    (cs_n), // keeping in zero to test data transmitted 
+        .cs_n    (spi_if_inst.cs_n), 
         .miso    (spi_if_inst.miso),
         .received(slave_data_out)
     );

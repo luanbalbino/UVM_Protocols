@@ -11,12 +11,14 @@ SRC = ../rtl/spi_master_simple.sv \
 	  ../tb/env/spi_agent.sv \
       ../tb/sequences/spi_sequence.sv \
 	  ../tb/sequences/spi_read_sequence.sv \
+	  ../tb/sequences/spi_modes_sequence.sv \
       ../tb/spi_sequencer.sv \
 	  ../tb/spi_cov.sv \
 	  ../tb/scb/spi_scb.sv \
       ../tb/env/spi_env.sv \
 	  ../tb/test/spi_base_test.sv \
-	  ../tb/test/spi_master_read_test.sv
+	  ../tb/test/spi_master_read_test.sv \
+	  ../tb/test/spi_modes_test.sv
 
 #../tb/spi_test_lib.sv 
 #../tb/spi_virtual_seq.sv \
@@ -28,13 +30,12 @@ endif
 # Define GUI mode as disabled by default
 gui ?= 0
 assert ?= 0
-SEQ ?= basic_transfer_seq
 
 SEED 	 = random
 COV_FILE = cov.ccf
 COV_OPT += -coverage all -covfile $(COV_FILE) -covoverwrite 
 OPT = +UVM_NO_RELNOTES -uvm -64bit -access +rwc -timescale 1ns/1ps  +UVM_VERBOSITY=UVM_LOW
-TESTNAME = spi_base_test
+TESTNAME = spi_modes_test # OPTIONS: [spi_base_test] I'll put the options here, when they become available
 
 ifeq ($(assert),1)
     OPT += +define+ENABLE_ASSERTIONS
