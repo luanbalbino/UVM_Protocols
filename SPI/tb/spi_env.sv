@@ -4,8 +4,7 @@
 class spi_env extends uvm_env;
     `uvm_component_utils(spi_env)
 
-    spi_driver drv;
-    spi_monitor mon;
+    spi_agent agt;
     spi_sequencer seq;
     spi_cov cov;
 
@@ -24,24 +23,21 @@ class spi_env extends uvm_env;
             `uvm_fatal("NOVIF", "Could not get virtual interface 'spi_vif' from config_db.")
         end
 
+        agt = spi_agent::type_id::create("agt", this);
         seq = spi_sequencer::type_id::create("seq", this);
-        drv = spi_driver::type_id::create("drv", this);
-        mon = spi_monitor::type_id::create("mon", this);
         cov = spi_cov::type_id::create("cov", this);
         
         // Connect driver to sequencer
-        drv.seq_item_port.connect(seq.seq_item_export);
+        uvm_config_db#(virtual spi_if)::set(this, "agt", "vif", vif);
     endfunction
 
     function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
         // Connect the virtual interface to the components
-        drv.vif = vif;
-        mon.vif = vif; 
         cov.vif = vif;
     
-        drv.seq_item_port.connect(seq.seq_item_export);
-        mon.ap.connect(cov.analysis_export);
+        agt.drv.seq_item_port.connect(seq.seq_item_export);
+        agt.mon.ap.connect(cov.analysis_export);
     endfunction
 
 endclass
