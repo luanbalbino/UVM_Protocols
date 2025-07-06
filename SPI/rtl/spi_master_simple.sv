@@ -2,7 +2,9 @@
 // SPI Master RTL with MISO reception support
 // Mode: CPOL = 0, CPHA = 0 | MSB First
 // -----------------------------------------------------------------------------
-module spi_master_simple (
+module spi_master_simple#(
+    parameter SPI_CLK_DIV = 5
+)(
     input  logic        clk,
     input  logic        rst_n,
     input  logic        start,
@@ -11,14 +13,9 @@ module spi_master_simple (
     output logic        mosi,
     output logic        sclk,
     output logic        done,
-    output logic [7:0]  data_out  
+    output logic [7:0]  data_out,
+    output logic        cs_n
 );
-
-    // Parameters for SPI clock divider
-    // Example: if clk = 100MHz and spi_clk_div = 2, sclk_freq = 50MHz
-    // If clk = 100MHz and spi_clk_div = 5, sclk_freq = 20MHz
-    localparam SPI_CLK_DIV = 2; // Adjust this value to control SCLK frequency
-
     typedef enum logic [1:0] {IDLE, TRANSFER} state_t;
     state_t state; // We will use 'state' directly for FSM logic
 
@@ -29,6 +26,7 @@ module spi_master_simple (
     logic mosi_reg; // mosi must be a register to be assigned in always_ff
     logic done_reg; // done must be a register to be assigned in always_ff
     logic [7:0] data_out_reg; // data_out must be a register
+    logic cs_n_reg;
 
     // Clock divider logic for sclk generation
     logic [($clog2(SPI_CLK_DIV)):0] clk_div_cnt;
@@ -39,6 +37,7 @@ module spi_master_simple (
     assign mosi = mosi_reg;
     assign done = done_reg; // The 'done' output is the 'done_reg' register
     assign data_out = data_out_reg;
+    assign cs_n = cs_n_reg;
 
     // Clock Divider Logic
     // This block is separate and controls the divider counter and the SPI clock enable
@@ -76,16 +75,19 @@ module spi_master_simple (
             mosi_reg     <= 1'b0;
             done_reg     <= 1'b0; // Reset done output
             data_out_reg <= 8'h00;
+            cs_n_reg     <= 1'b1;
         end else begin
-            // Default assignments to avoid latches or 'x's
-            // These values will be overwritten if a specific condition is met
-            sclk_reg     <= sclk_reg;   // Maintain current value
-            mosi_reg     <= mosi_reg;   // Maintain current value
-            data_out_reg <= data_out_reg; // Maintain current value
+
+            // Maintain current value
+            sclk_reg     <= sclk_reg;     
+            mosi_reg     <= mosi_reg;    
+            data_out_reg <= data_out_reg;
+            cs_n_reg     <= cs_n_reg;
 
             // State Machine Logic
             case (state)
                 IDLE: begin
+                    cs_n_reg <= 1'b1;
                     // When in IDLE, if 'start' is asserted, transition to TRANSFER
                     if (start) begin
                         state        <= TRANSFER;
@@ -95,6 +97,7 @@ module spi_master_simple (
                         sclk_reg     <= 1'b0;    // Ensure SCLK is low at the start of transfer (CPOL=0)
                         mosi_reg     <= 1'b0;    // Ensure MOSI is low at the start (or the first bit will be set)
                         done_reg     <= 1'b0;    // Ensure done is low when starting a new transaction
+                        cs_n_reg     <= 1'b0;
                     end
                     // If no 'start' and in IDLE, ensure done_reg is 0
                     else begin
@@ -103,6 +106,8 @@ module spi_master_simple (
                 end
 
                 TRANSFER: begin
+                    cs_n_reg <= 1'b0;
+
                     // Logic for CPOL=0, CPHA=0
                     // SCLK starts low
                     // Data is valid on SCLK rising edge and changes on falling edge
@@ -118,7 +123,8 @@ module spi_master_simple (
                             if (bit_cnt == 3'd7) begin
                                 data_out_reg <= {shift_reg_rx[6:0], miso}; // Capture the last received bit
                                 done_reg <= 1'b1; // Assert 'done'
-                                state <= IDLE; // Transition back to IDLE
+                                state <= IDLE;    // Transition back to IDLE
+                                cs_n_reg <= 1'b1;
                             end
                             bit_cnt <= bit_cnt + 1; // Increment bit counter
 

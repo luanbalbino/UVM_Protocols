@@ -13,6 +13,7 @@ SRC = ../rtl/spi_master_simple.sv \
 	  ../tb/sequences/spi_read_sequence.sv \
       ../tb/spi_sequencer.sv \
 	  ../tb/spi_cov.sv \
+	  ../tb/scb/spi_scb.sv \
       ../tb/env/spi_env.sv \
 	  ../tb/test/spi_base_test.sv \
 	  ../tb/test/spi_master_read_test.sv
