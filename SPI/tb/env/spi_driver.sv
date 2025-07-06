@@ -46,6 +46,7 @@ class spi_driver extends uvm_driver #(spi_transaction);
             // Added debug for vif.done value
             `uvm_info("DRIVER", $sformatf("@%0t: Before @(posedge vif.done), vif.done=%0b", $time, vif.done), UVM_DEBUG)
             @(posedge vif.done);
+            @(posedge vif.clk);
             `uvm_info("DRIVER", $sformatf("@%0t: Transmission completed for 0x%0h (DONE detected).", $time, tr.data), UVM_MEDIUM)
 
             seq_item_port.item_done();

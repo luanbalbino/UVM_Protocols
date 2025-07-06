@@ -7,6 +7,7 @@ interface spi_if(input logic clk, input logic rst_n);
     logic [7:0] data_in;    // Input data for the master
     logic done;             // Done signal from the master
     logic [7:0] data_out;   // Output data from the master (received)
+    logic [7:0] received_slave;
 
     modport master (
         input  clk, rst_n,

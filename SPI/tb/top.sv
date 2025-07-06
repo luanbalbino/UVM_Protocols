@@ -10,31 +10,38 @@ module top;
     logic clk;
     logic rst_n;
     logic miso, mosi, sclk;
+    wire cs_n;
     
     logic [7:0] slave_data_out;
 
     spi_if spi_if_inst(.clk(clk), .rst_n(rst_n));
 
-    spi_master_simple master (
+    assign spi_if_inst.received_slave = slave_data_out;
+
+    spi_master_simple #(
+        .SPI_CLK_DIV(2)
+    ) master (
         .clk(clk),
         .rst_n(spi_if_inst.rst_n),    
         .start(spi_if_inst.start),    
         .data_in(spi_if_inst.data_in),
-        .miso(1'b0),                   // MISO connected to zero, there is no slave module yet, I'll do this in the future
+        .miso(spi_if_inst.miso),           
         .mosi(spi_if_inst.mosi),
         .sclk(spi_if_inst.sclk),
         .done(spi_if_inst.done),
-        .data_out(spi_if_inst.data_out)
+        .data_out(spi_if_inst.data_out),
+        .cs_n(cs_n)
     );
 
-    // // SPI Slave Simple
-    // spi_slave_simple slave (
-    //     .sclk(sclk),
-    //     .mosi(mosi),
-    //     .cs_n(1'b0), // Ignorado aqui
-    //     .miso(miso),
-    //     .received(slave_data_out)
-    // );
+    spi_slave_simple slave (
+        .clk     (clk),
+        .rst_n   (rst_n),
+        .sclk    (spi_if_inst.sclk),
+        .mosi    (spi_if_inst.mosi),
+        .cs_n    (cs_n), // keeping in zero to test data transmitted 
+        .miso    (spi_if_inst.miso),
+        .received(slave_data_out)
+    );
 
     `ifdef ENABLE_ASSERTIONS
         spi_assertions uu_spi_assertions (
@@ -44,7 +51,7 @@ module top;
             .sclk(spi_if_inst.sclk),
             .mosi(spi_if_inst.mosi),
             .miso(spi_if_inst.miso),
-            .ss_n('0),
+            .cs_n(cs_n),
             .done(done),
             .data_in(data_in),
             .data_out(data_out),

@@ -7,6 +7,7 @@ class spi_env extends uvm_env;
     spi_agent agt;
     spi_sequencer seq;
     spi_cov cov;
+    spi_scb sb;
 
     // Variable for the virtual interface
     virtual spi_if vif;
@@ -26,6 +27,7 @@ class spi_env extends uvm_env;
         agt = spi_agent::type_id::create("agt", this);
         seq = spi_sequencer::type_id::create("seq", this);
         cov = spi_cov::type_id::create("cov", this);
+        sb  = spi_scb::type_id::create("sb", this);
         
         // Connect driver to sequencer
         uvm_config_db#(virtual spi_if)::set(this, "agt", "vif", vif);
@@ -35,6 +37,7 @@ class spi_env extends uvm_env;
         super.connect_phase(phase);
         // Connect the virtual interface to the components
         cov.vif = vif;
+        sb.vif = vif;
     
         agt.drv.seq_item_port.connect(seq.seq_item_export);
         agt.mon.ap.connect(cov.analysis_export);
