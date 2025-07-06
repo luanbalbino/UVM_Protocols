@@ -5,11 +5,11 @@ module spi_assertions (
     input  logic        sclk,
     input  logic        mosi,
     input  logic        miso,
-    input  logic [7:0]  data_in,
-    input  logic [7:0]  expected_data_out,
+    input  logic [15:0]  data_in,
+    input  logic [15:0]  expected_data_out,
     input  logic        cs_n,       // Slave select, active low
     input  logic        done,
-    input  logic [7:0]  data_out    // Received data from MISO
+    input  logic [15:0]  data_out    // Received data from MISO
 );
 
     // TODO: 

@@ -3,29 +3,33 @@
 // Mode: CPOL = 0, CPHA = 0 | MSB First
 // -----------------------------------------------------------------------------
 module spi_master_simple#(
-    parameter SPI_CLK_DIV = 5
+    parameter SPI_CLK_DIV  = 5,
+    parameter int WORD_LEN = 8
 )(
     input  logic        clk,
     input  logic        rst_n,
     input  logic        start,
-    input  logic [7:0]  data_in,
+    input  logic [WORD_LEN-1:0] data_in,
     input  logic        miso,
     output logic        mosi,
     output logic        sclk,
     output logic        done,
-    output logic [7:0]  data_out,
+    output logic [WORD_LEN-1:0] data_out,
     output logic        cs_n
 );
     typedef enum logic [1:0] {IDLE, TRANSFER} state_t;
     state_t state; // We will use 'state' directly for FSM logic
 
-    logic [7:0] shift_reg_tx;   // Transmission shift register
-    logic [7:0] shift_reg_rx;   // Reception shift register
-    logic [2:0] bit_cnt;
+    
     logic sclk_reg;
-    logic mosi_reg; // mosi must be a register to be assigned in always_ff
-    logic done_reg; // done must be a register to be assigned in always_ff
-    logic [7:0] data_out_reg; // data_out must be a register
+    logic mosi_reg; 
+    logic done_reg; 
+    logic [WORD_LEN-1:0] data_out_reg; // data_out must be a register
+    
+    logic [$clog2(WORD_LEN):0] bit_cnt;
+    logic [WORD_LEN-1:0] shift_reg_tx;   // Transmission shift register (up to 16 bits)
+    logic [WORD_LEN-1:0] shift_reg_rx;   // Reception shift register
+
     logic cs_n_reg;
 
     // Clock divider logic for sclk generation
@@ -117,22 +121,21 @@ module spi_master_simple#(
 
                         if (sclk_reg == 1'b1) begin // SCLK rising edge (sample MISO, shift TX)
                             // Capture bit from miso line
-                            shift_reg_rx <= {shift_reg_rx[6:0], miso};
+                            shift_reg_rx <= {shift_reg_rx[WORD_LEN-2:0], miso};
 
-                            // If it's the last bit (bit_cnt == 7, i.e., 8th bit from 0 to 7)
-                            if (bit_cnt == 3'd7) begin
-                                data_out_reg <= {shift_reg_rx[6:0], miso}; // Capture the last received bit
+                            // If it's the last bit (WORD_LEN - 1)
+                            if (bit_cnt == (WORD_LEN - 1)) begin
+                                data_out_reg <= shift_reg_rx;
                                 done_reg <= 1'b1; // Assert 'done'
                                 state <= IDLE;    // Transition back to IDLE
-                                cs_n_reg <= 1'b1;
-                            end
+                                cs_n_reg <= 1'b1;                            end
                             bit_cnt <= bit_cnt + 1; // Increment bit counter
 
                         end else begin // SCLK falling edge (change MOSI, shift TX)
                             // Send MSB on mosi
-                            mosi_reg <= shift_reg_tx[7];
+                            mosi_reg <= shift_reg_tx[WORD_LEN-1];
                             // Shift transmission data for the next bit
-                            shift_reg_tx <= {shift_reg_tx[6:0], 1'b0};
+                            shift_reg_tx <= {shift_reg_tx[WORD_LEN-2:0], 1'b0};
                         end
                     end
                 end

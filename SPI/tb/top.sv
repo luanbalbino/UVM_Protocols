@@ -11,15 +11,18 @@ module top;
     logic rst_n;
     logic miso, mosi, sclk;
     wire cs_n;
+
+    parameter WORD_LEN = 8;
     
-    logic [7:0] slave_data_out;
+    logic [WORD_LEN-1:0] slave_data_out;
 
     spi_if spi_if_inst(.clk(clk), .rst_n(rst_n));
 
     assign spi_if_inst.received_slave = slave_data_out;
 
     spi_master_simple #(
-        .SPI_CLK_DIV(2)
+        .SPI_CLK_DIV('d2),
+        .WORD_LEN(WORD_LEN)
     ) master (
         .clk(clk),
         .rst_n(spi_if_inst.rst_n),    
@@ -33,7 +36,9 @@ module top;
         .cs_n(cs_n)
     );
 
-    spi_slave_simple slave (
+    spi_slave_simple #(
+        .WORD_LEN(WORD_LEN)
+    ) slave (
         .clk     (clk),
         .rst_n   (rst_n),
         .sclk    (spi_if_inst.sclk),
