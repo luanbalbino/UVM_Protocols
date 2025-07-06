@@ -1,6 +1,3 @@
-// -----------------------------------------------------------------------------
-// UVM Agent
-// -----------------------------------------------------------------------------
 class spi_agent extends uvm_agent;
 
     `uvm_component_utils(spi_agent)
@@ -37,3 +34,4 @@ class spi_agent extends uvm_agent;
     endfunction
   
   endclass : spi_agent
+  
