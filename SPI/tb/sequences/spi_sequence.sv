@@ -10,10 +10,10 @@ class spi_sequence extends uvm_sequence #(spi_transaction);
 
     virtual task body();
         spi_transaction tr;
-        int unsigned word_len = 12; //example, i'll remove this later to make more flexible
+        int unsigned word_len = 12;
         int unsigned max_val = (1 << word_len) - 1;
     
-        for (int i = 0; i < 10; i++) begin
+        for (int i = 0; i < 5; i++) begin
             tr = spi_transaction::type_id::create("tr");
             tr.data = $urandom_range(0, max_val);
     

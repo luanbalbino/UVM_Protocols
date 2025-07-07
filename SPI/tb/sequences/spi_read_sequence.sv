@@ -8,8 +8,7 @@ class spi_read_sequence extends uvm_sequence#(spi_transaction);
 
     virtual task body();
         spi_transaction tr; 
-
-        
+       
         for (int i = 0; i < 50; i++) begin
             tr = spi_transaction::type_id::create("tr");
             tr.data = i;

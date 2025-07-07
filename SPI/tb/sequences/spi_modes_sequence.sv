@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// Sequence to test SPI modes (CPOL/CPHA)
+// Sequence to test all SPI modes (CPOL/CPHA)
 // -----------------------------------------------------------------------------
 class spi_modes_sequence extends uvm_sequence #(spi_transaction);
     `uvm_object_utils(spi_modes_sequence)
