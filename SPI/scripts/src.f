@@ -3,6 +3,7 @@
 ../tb/top/top_master_slave.sv
 ../tb/if/spi_if.sv
 ../tb/agent/spi_transaction.sv
+../tb/agent/spi_sequencer.sv
 ../tb/agent/spi_driver.sv
 ../tb/agent/spi_monitor.sv
 ../tb/agent/spi_monitor_in.sv
@@ -12,15 +13,12 @@
 ../tb/sequences/spi_modes_sequence.sv
 ../tb/sequences/spi_simple_tx_sequence.sv
 ../tb/sequences/spi_pattern_sequence.sv
-../tb/sequences/spi_loopback_sequence.sv
 ../tb/sequences/spi_burst_sequence.sv
+../tb/env/spi_virtual_sequencer.sv
 ../tb/sequences/spi_virtual_sequence.sv
-../tb/env/spi_sequencer.sv
 ../tb/env/spi_cov.sv
 ../tb/env/spi_refmod.sv
 ../tb/env/spi_scb.sv
 ../tb/env/spi_env.sv
 ../tb/test/spi_base_test.sv
-../tb/test/spi_master_read_test.sv
-../tb/test/spi_modes_test.sv
 ../tb/test/spi_full_test.sv
