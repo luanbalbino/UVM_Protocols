@@ -74,7 +74,12 @@ class spi_cov extends uvm_subscriber #(spi_transaction);
 
     function void report_phase(uvm_phase phase);
         super.report_phase(phase);
-        `uvm_info(get_type_name(), $sformatf("Coverage: %0.2f%% | Total transactions: %0d", spi_master_cg.get_coverage(), transaction_count), UVM_LOW)
+    
+        $display("\n==================================================================");
+        $display("                         METRICS REPORT                          ");
+        $display("==================================================================");
+        $display("Coverage: %0.2f%% | Total transactions: %0d", spi_master_cg.get_coverage(), transaction_count);
+        $display("==================================================================\n");
     endfunction
 
 endclass
