@@ -5,10 +5,10 @@ class spi_env extends uvm_env;
     `uvm_component_utils(spi_env)
 
     spi_agent agt;
-    spi_sequencer seq;
     spi_cov cov;
     spi_scb sb;
     spi_refmod refmod;
+    spi_virtual_sequencer spi_v_seq;
 
     // Variable for the virtual interface
     virtual spi_if vif;
@@ -26,10 +26,10 @@ class spi_env extends uvm_env;
         end
 
         agt     = spi_agent::type_id::create("agt", this);
-        seq     = spi_sequencer::type_id::create("seq", this);
         cov     = spi_cov::type_id::create("cov", this);
         sb      = spi_scb::type_id::create("sb", this);
         refmod  = spi_refmod::type_id::create("refmod", this);
+        spi_v_seq = spi_virtual_sequencer::type_id::create("spi_v_seq",this);
         
         // Connect driver to sequencer
         uvm_config_db#(virtual spi_if)::set(this, "agt", "vif", vif);
@@ -41,11 +41,10 @@ class spi_env extends uvm_env;
         cov.vif = vif;
         sb.vif  = vif;
 
-        // driver to sequencer
-        agt.drv.seq_item_port.connect(seq.seq_item_export);
-
         // monitor -> coverage
         agt.mon.ap.connect(cov.analysis_export);
+
+        spi_v_seq.seqr = agt.sequencer;
 
         // input transaction -> refmod
         agt.mon_in.ap.connect(refmod.in);
@@ -55,6 +54,16 @@ class spi_env extends uvm_env;
         
         // output transaction -> scoreboard
         agt.mon.ap.connect(sb.rtl_out.analysis_export);
+    endfunction
+
+    function void report_phase(uvm_phase phase);
+        super.report_phase(phase);
+    
+        $display("\n==================================================================");
+        $display("                         UVM TEST REPORT                          ");
+        $display("==================================================================");
+        $display(">>> ENVIRONMENT: MASTER + SLAVE");
+        $display("==================================================================\n");
     endfunction
 
 endclass

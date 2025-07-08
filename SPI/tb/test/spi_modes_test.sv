@@ -15,7 +15,7 @@ class spi_modes_test extends spi_base_test;
         spi_modes_sequence seq1;
         phase.raise_objection(this);
         seq1 = spi_modes_sequence::type_id::create("seq1");
-        seq1.start(env.seq);
+        seq1.start(env.spi_v_seq);
         phase.drop_objection(this);
     endtask
 endclass

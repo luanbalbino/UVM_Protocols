@@ -10,7 +10,7 @@ class spi_full_test extends spi_base_test;
         phase.raise_objection(this);
 
         seq1 = spi_virtual_sequence::type_id::create("seq1");
-        seq1.start(env.seq);
+        seq1.start(env.spi_v_seq);
         
 
         phase.drop_objection(this);

@@ -16,15 +16,14 @@ class spi_base_test extends uvm_test;
     endfunction
 
     task run_phase(uvm_phase phase);
-        spi_sequence seq_h;
+        spi_virtual_sequence seq_h;
         phase.raise_objection(this);
     
-        seq_h = spi_sequence::type_id::create("seq_h");
-        seq_h.start(env.seq);
+        seq_h = spi_virtual_sequence::type_id::create("seq_h");
+        seq_h.start(env.spi_v_seq);
     
         phase.drop_objection(this);
     endtask
     
+    
 endclass
-
-

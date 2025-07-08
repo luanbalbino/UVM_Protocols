@@ -4,13 +4,15 @@
 class spi_virtual_sequence extends uvm_sequence #(spi_transaction);
     `uvm_object_utils(spi_virtual_sequence)
 
+    `uvm_declare_p_sequencer(spi_virtual_sequencer)
+
+    
     function new(string name = "spi_virtual_sequence");
         super.new(name);
     endfunction
 
     task body();
         spi_simple_tx_sequence      simple_seq;
-        spi_loopback_sequence       loopback_seq;
         spi_burst_sequence          burst_seq;
         spi_pattern_sequence        pattern_seq;
 
@@ -19,19 +21,15 @@ class spi_virtual_sequence extends uvm_sequence #(spi_transaction);
 
         `uvm_info(get_type_name(), "Starting spi_simple_tx_sequence", UVM_MEDIUM)
         simple_seq = spi_simple_tx_sequence::type_id::create("simple_seq");
-        simple_seq.start(m_sequencer);
-
-        //`uvm_info(get_type_name(), "Starting spi_loopback_sequence", UVM_MEDIUM)
-        //loopback_seq = spi_loopback_sequence::type_id::create("loopback_seq");
-        //loopback_seq.start(m_sequencer);
+        simple_seq.start(p_sequencer.seqr);
 
         `uvm_info(get_type_name(), "Starting spi_burst_sequence", UVM_MEDIUM)
         burst_seq = spi_burst_sequence::type_id::create("burst_seq");
-        burst_seq.start(m_sequencer);
+        burst_seq.start(p_sequencer.seqr);
 
         `uvm_info(get_type_name(), "Starting spi_pattern_sequence", UVM_MEDIUM)
         pattern_seq = spi_pattern_sequence::type_id::create("pattern_seq");
-        pattern_seq.start(m_sequencer);
+        pattern_seq.start(p_sequencer.seqr);
 
         `uvm_info(get_type_name(), "FINISH ALL SEQUENCES", UVM_LOW)
 
