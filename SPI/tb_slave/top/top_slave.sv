@@ -38,13 +38,11 @@ module top_slave;
     logic cpol_sig;
     logic cpha_sig;
     
-    logic [WORD_LEN-1:0] slave_data_out; // Output from the slave (received data)
-    logic [WORD_LEN-1:0] slave_data_in;  // Input to the slave (data to send)
-    
     spi_if #(.WORD_LEN(WORD_LEN)) spi_if_inst(.clk(clk), .rst_n(rst_n));
 
     spi_slave_simple_2 #(
-        .WORD_LEN(WORD_LEN)
+        .WORD_LEN(WORD_LEN),
+        .MSB_FIRST('d1)
     ) slave (
         .clk        (clk),
         .rst_n      (rst_n),
@@ -54,7 +52,7 @@ module top_slave;
         .miso       (spi_if_inst.miso),
         .cpol_in    (spi_if_inst.cpol), 
         .cpha_in    (spi_if_inst.cpha),
-        .received   (slave_data_out)
+        .received   (spi_if_inst.received)
     );
 
     // Reset generation
@@ -64,21 +62,32 @@ module top_slave;
         rst_n = 1'b1;
     end
 
+    `ifdef ENABLE_ASSERTIONS
+        spi_assertions #(
+            .WORD_LEN(WORD_LEN)
+        ) spi_assertions_inst (
+            .clk        (clk),
+            .rst_n      (rst_n),
+            .cs_n       (spi_if_inst.cs_n),
+            .sclk       (spi_if_inst.sclk),
+            .mosi       (spi_if_inst.mosi),
+            .miso       (spi_if_inst.miso),
+            .spi_mode   ({spi_if_inst.cpol, spi_if_inst.cpha})
+        );
+    `endif
+
     // Initial values for SPI signals (can be overridden by driver)
     initial begin
         spi_if_inst.cs_n  = 1'b1;
         spi_if_inst.sclk  = cpol_sig; 
         spi_if_inst.mosi  = 1'b0;
-        slave_data_in = '0; 
     end
     
     initial clk = 0;
-    always #5 clk = ~clk; // 10ns clock period (100 MHz)
+    always #5 clk = ~clk;
 
     initial begin
-        // Pass the interface to UVM environment
         uvm_config_db#(virtual spi_if #(.WORD_LEN(WORD_LEN)))::set(null, "*", "spi_vif", spi_if_inst);
-
         run_test();
     end
 endmodule   
