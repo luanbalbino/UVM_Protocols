@@ -1,6 +1,6 @@
 # UVM Protocol Studies
 
-This repository contains UVM-based verification environments for various digital protocols.
+The purpose of this repository is to contain testbenches and code that I use to study concepts about verification/UVM of communication protocols.
 
 ## Implemented Protocols
 
