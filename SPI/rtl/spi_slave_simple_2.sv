@@ -43,10 +43,8 @@ module spi_slave_simple_2 #(
         shift_edge  = (cpha_in == 1'b0) ? second_edge : first_edge;
     end
 
-    // >>> FIXED <<<: nova variável para controlar incremento
     logic [$clog2(WORD_LEN+1)-1:0] next_cnt;
 
-    // Recepção
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             shift_rx     <= '0;
@@ -60,16 +58,16 @@ module spi_slave_simple_2 #(
                 else
                     shift_rx <= {mosi, shift_rx[WORD_LEN-1:1]};
 
-                next_cnt = bit_cnt + 1;                     // >>> FIXED <<<
+                next_cnt = bit_cnt + 1;           
 
-                if (bit_cnt == WORD_LEN - 1) begin          // >>> FIXED <<<
+                if (bit_cnt == WORD_LEN - 1) begin
                     if (MSB_FIRST)
                         received_reg <= {shift_rx[WORD_LEN-2:0], mosi};
                     else
                         received_reg <= {mosi, shift_rx[WORD_LEN-1:1]};
-                    bit_cnt <= '0;                          // >>> FIXED <<<
+                    bit_cnt <= '0;                
                 end else begin
-                    bit_cnt <= next_cnt;                   // >>> FIXED <<<
+                    bit_cnt <= next_cnt;         
                 end
             end
         end else begin
