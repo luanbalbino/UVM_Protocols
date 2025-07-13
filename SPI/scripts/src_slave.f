@@ -5,15 +5,11 @@
 ../tb_slave/agent/spi_sequencer.sv
 ../tb_slave/agent/spi_driver.sv
 ../tb_slave/agent/spi_monitor.sv
-../tb_slave/agent/spi_monitor_in.sv
 ../tb_slave/agent/spi_agent.sv
 ../tb_slave/sequences/spi_simple_rx_sequence.sv
 ../tb_slave/sequences/spi_mode_test_sequence.sv
-../tb_slave/sequences/spi_reset_sequence.sv
-../tb_slave/sequences/spi_full_rx_sequence.sv
 ../tb_slave/sequences/spi_cs_check_sequence.sv
 ../tb_slave/sequences/spi_miso_test_sequence.sv
-../tb_slave/sequences/spi_partial_transaction_sequence.sv
 ../tb_slave/env/spi_virtual_sequencer.sv
 ../tb_slave/sequences/spi_virtual_sequence.sv
 ../tb_slave/env/spi_cov.sv
@@ -22,3 +18,4 @@
 ../tb_slave/env/spi_env.sv
 ../tb_slave/test/spi_base_test.sv
 ../tb_slave/test/spi_full_test.sv
+../tb_slave/spi_assertions.sv

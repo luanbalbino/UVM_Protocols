@@ -22,3 +22,4 @@
 ../tb/env/spi_env.sv
 ../tb/test/spi_base_test.sv
 ../tb/test/spi_full_test.sv
+../tb/spi_assertions.sv
