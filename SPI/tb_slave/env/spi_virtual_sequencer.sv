@@ -1,8 +1,8 @@
 // -----------------------------------------------------------------------------
 // Sequencer UVM
 // -----------------------------------------------------------------------------
-class spi_virtual_sequencer#(parameter int WORD_LEN = 12) extends uvm_sequencer #(spi_seq_item);
-    `uvm_component_utils(spi_virtual_sequencer)
+class spi_virtual_sequencer#(parameter int WORD_LEN = 12) extends uvm_sequencer #(spi_seq_item#(WORD_LEN));
+    `uvm_component_utils(spi_virtual_sequencer#(WORD_LEN))
 
     spi_sequencer#(WORD_LEN) seqr;
 

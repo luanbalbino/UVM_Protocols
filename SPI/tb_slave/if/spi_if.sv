@@ -11,7 +11,8 @@ interface spi_if #(
     logic cs_n;
     logic cpol;
     logic cpha;
-    logic [WORD_LEN-1:0] data;  
+    logic [WORD_LEN-1:0] mosi_data;  
+    logic [WORD_LEN-1:0] received; 
 
     modport master (
         input  clk, rst_n,
@@ -21,7 +22,7 @@ interface spi_if #(
 
     modport slave (
         input  clk, rst_n, mosi, sclk, cs_n, cpol, cpha,
-        output miso
+        output miso, received
     );
 
 endinterface
