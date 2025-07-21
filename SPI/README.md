@@ -68,6 +68,10 @@ SPI defines 4 clocking modes based on two configuration bits:
 
 ---
 
+### Waveform example
+
+![Wave for just one sequence](figs/all_seqs_together.png)
+
 ## 📂 Directory Structure
 
 - `figs/` – Diagrams, evidences or illustrative figures  
