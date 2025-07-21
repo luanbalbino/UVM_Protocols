@@ -1,0 +1,15 @@
+../uart/clk_gen/clk_gen.sv
+../uart/RTL/uart_tx.sv
+../uart/RTL/uart_rx.sv
+../uart/RTL/uart_top.sv
+../uart/if/uart_if.sv
+../uart/env/uart_config.sv
+../uart/agent/transaction.sv
+../uart/sequences/seq1.sv
+../uart/agent/mon.sv
+../uart/agent/drv.sv
+../uart/agent/agent.sv
+../uart/env/sco.sv
+../uart/env/env.sv
+../uart/test/test.sv
+../uart/tb.sv
